@@ -4,14 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Back Office</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
+    <nav class="navbar navbar-expand-lg bg-light">
+      <div class="container-fluid">
+        <img
+          src="https://www.littlegreenthumbs.org/wp-content/uploads/2018/03/Sharing-Thumb-1.png"
+          alt="logo"
+          id="logo"
+        />
+        <a class="navbar-brand ms-1 text-success" href="#">TheGreenThumb.net</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="./homepage.html">HOME</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
     <div class="container mt-5">
       <h1 class="mb-4">Back Office</h1>
       <form id="AddNewProduct">
@@ -24,7 +48,7 @@
           <input type="text" class="form-control" id="description" required />
         </div>
         <div class="form-group">
-          <label for="brand">Brand:</label>
+          <label for="brand">Species:</label>
           <input type="text" class="form-control" id="brand" required />
         </div>
         <div class="form-group">
@@ -39,15 +63,11 @@
         <button type="button" class="btn btn-secondary ml-2" id="resetBTN">Reset</button>
       </form>
     </div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const URL = "https://striveschool-api.herokuapp.com/api/product/";
 
-      document.getElementById("AddNewProduct").addEventListener("submit", function (e) {
+      document.getElementById("AddNewProduct").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const productData = {
@@ -58,55 +78,32 @@
           price: document.getElementById("price").value,
         };
 
-        fetch(URL, {
-          method: "POST",
-          body: JSON.stringify(productData),
-          headers: {
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Error creating product! Please try again later.");
-            }
-            return response.json();
-          })
-          .then((productData) => {
-            addProductToHomepage(productData);
-            alert("Product created successfully!");
-            document.getElementById("AddNewProduct").reset();
-          })
-          .catch((error) => {
-            console.error("Error:", error.message);
-            alert("An error occurred. Please try again later.");
+        try {
+          const response = await fetch(URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(productData),
           });
+
+          if (response.ok) {
+            alert("Product added successfully");
+            document.getElementById("AddNewProduct").reset();
+            window.location.href = "./homepage.html";
+          } else {
+            throw new Error("Error adding product");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error adding product");
+        }
       });
 
-      function addProductToHomepage(productData) {
-        const productList = document.getElementById("product-list");
-
-        const productCol = document.createElement("div");
-        productCol.classList.add("col-md-4");
-
-        const productCard = document.createElement("div");
-        productCard.classList.add("card");
-
-        productCard.innerHTML = `
-      <img src="${productData.imageUrl}" class="card-img-top" alt="${productData.name}">
-      <div class="card-body">
-          <h5 class="card-title">${productData.name}</h5>
-          <p class="card-text">${productData.description}</p>
-          <p class="card-text">${productData.brand}</p>
-          <p class="card-text">$${productData.price}</p>
-          <button class="btn btn-primary" onclick="editProduct('${productData._id}')">Modifica</button>
-          <button class="btn btn-danger" onclick="deleteProduct('${productData._id}')">Cancella</button>
-      </div>
-  `;
-
-        productCol.appendChild(productCard);
-        productList.appendChild(productCol);
-      }
+      document.getElementById("resetBTN").addEventListener("click", () => {
+        document.getElementById("AddNewProduct").reset();
+      });
     </script>
   </body>
 </html>
