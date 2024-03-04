@@ -43,6 +43,7 @@
 
     <script>
       const urlParams = new URLSearchParams(window.location.search);
+      console.log(urlParams);
       const productId = urlParams.get("productId");
       const URL = "https://striveschool-api.herokuapp.com/api/product/" + productId;
       window.onload = () => {
@@ -55,7 +56,7 @@
           })
           .then((product) => {
             const productDetailsDiv = document.getElementById("product-details");
-            productDetailsDiv.innerHTML = `
+            productDetailsDiv.innerHTML = ` 
                                <div class="card">
                                <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}">
                                <div class="card-body">

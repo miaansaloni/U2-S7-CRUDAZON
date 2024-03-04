@@ -38,6 +38,7 @@
     </nav>
     <div class="container mt-5">
       <h1 class="mb-4">Back Office</h1>
+      <h2 id="mode"></h2>
       <form id="AddNewProduct">
         <div class="form-group">
           <label for="name">Name:</label>
@@ -59,13 +60,71 @@
           <label for="price">Price:</label>
           <input type="number" class="form-control" id="price" required />
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-        <button type="button" class="btn btn-secondary ml-2" id="resetBTN">Reset</button>
+        <button type="submit" class="btn btn-primary" id="submitBTN">Submit</button>
+        <button type="button" class="btn btn-secondary mx-2" id="resetBTN">Reset</button>
+        <button type="button" class="btn btn-danger d-none" id="deleteBTN">Delete</button>
       </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const URL = "https://striveschool-api.herokuapp.com/api/product/";
+      const productId = new URLSearchParams(window.location.search).get("productId");
+
+      const method = productId ? "PUT" : "POST";
+
+      window.onload = () => {
+        const mode = document.getElementById("mode");
+        const submitBTN = document.getElementById("submitBTN");
+        const resetBTN = document.getElementById("resetBTN");
+        const deleteBTN = document.getElementById("deleteBTN");
+
+        if (productId) {
+          mode.innerText = "Edit Product";
+          submitBTN.innerText = "Edit";
+
+          deleteBTN.classList.remove("d-none");
+
+          fetch(URL, {
+            method: method,
+            headers: {
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(productData),
+          })
+            .then((response) => {
+              console.log(response);
+              if (response.ok) {
+                return response.json();
+              } else {
+                if (response.status === 400) {
+                  throw new Error("400 - Errore lato client");
+                }
+
+                if (response.status === 404) {
+                  throw new Error("404 - Dato non trovato");
+                }
+
+                if (response.status === 500) {
+                  throw new Error("500 - Errore lato server");
+                }
+
+                throw new Error("Errore nel reperimento dati");
+              }
+            })
+            .then((product) => {
+              console.log(product);
+              document.getElementById("name").value = product.name;
+              document.getElementById("description").value = product.description;
+              document.getElementById("brand").value = product.brand;
+              document.getElementById("imageUrl").value = product.imageUrl;
+              document.getElementById("price").value = product.price;
+            });
+        } else {
+          mode.innerText = "Create New Product";
+          submitBtn.innerText = "Create";
+        }
+      };
 
       document.getElementById("AddNewProduct").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -80,7 +139,7 @@
 
         try {
           const response = await fetch(URL, {
-            method: "POST",
+            method: method,
             headers: {
               Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
               "Content-Type": "application/json",
@@ -89,17 +148,29 @@
           });
 
           if (response.ok) {
-            alert("Product added successfully");
+            alert("Product " + (productId ? "updated" : "added") + " successfully");
             document.getElementById("AddNewProduct").reset();
             window.location.href = "./homepage.html";
           } else {
-            throw new Error("Error adding product");
+            throw new Error("Error " + (productId ? "updating" : "adding") + " product");
           }
         } catch (error) {
           console.error(error);
-          alert("Error adding product");
+          alert("Error " + (productId ? "updating" : "adding") + " product");
         }
       });
+
+      const handleDelete = () => {
+        const confirmed = confirm("Are you sure you want to remove this product?");
+        if (confirmed) {
+          fetch(URL, { method: "DELETE" })
+            .then((resp) => resp.json())
+            .then((deleteProduct) => {
+              alert("abbiamo eliminato " + deleteProduct.name);
+              window.location.assign("./homepage.html");
+            });
+        }
+      };
 
       document.getElementById("resetBTN").addEventListener("click", () => {
         document.getElementById("AddNewProduct").reset();
