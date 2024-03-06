@@ -62,14 +62,16 @@
         </div>
         <button type="submit" class="btn btn-primary" id="submitBTN">Submit</button>
         <button type="button" class="btn btn-secondary mx-2" id="resetBTN">Reset</button>
-        <button type="button" class="btn btn-danger d-none" id="deleteBTN">Delete</button>
+        <button type="button" class="btn btn-danger d-none" id="deleteBTN" onclick="handleDelete()">Delete</button>
       </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      const URL = "https://striveschool-api.herokuapp.com/api/product/";
       const productId = new URLSearchParams(window.location.search).get("productId");
 
+      const URL = productId
+        ? "https://striveschool-api.herokuapp.com/api/product/" + productId
+        : "https://striveschool-api.herokuapp.com/api/product/";
       const method = productId ? "PUT" : "POST";
 
       window.onload = () => {
@@ -85,12 +87,11 @@
           deleteBTN.classList.remove("d-none");
 
           fetch(URL, {
-            method: method,
+            method,
             headers: {
               Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(productData),
           })
             .then((response) => {
               console.log(response);
@@ -140,11 +141,11 @@
         try {
           const response = await fetch(URL, {
             method: method,
-            headers: {
-              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
-              "Content-Type": "application/json",
-            },
             body: JSON.stringify(productData),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
+            },
           });
 
           if (response.ok) {
@@ -163,7 +164,12 @@
       const handleDelete = () => {
         const confirmed = confirm("Are you sure you want to remove this product?");
         if (confirmed) {
-          fetch(URL, { method: "DELETE" })
+          fetch(URL, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWUxYTNjNTRjNTllYzAwMTk5MGQ3MWUiLCJpYXQiOjE3MDkyODYzNDEsImV4cCI6MTcxMDQ5NTk0MX0.O6nOFEt6ursoglRs-R2D_6XrDi281Jnz_TXU0uI-ePI`,
+            },
+          })
             .then((resp) => resp.json())
             .then((deleteProduct) => {
               alert("abbiamo eliminato " + deleteProduct.name);
